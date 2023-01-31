@@ -72,15 +72,15 @@ foreach my $line (<STDIN>){
 	}elsif ($is_satellite_provider){
 		$code = "A2";
 		$name = "Satellite Provider";
+	}elsif($countryinfo->{$geoname_id}){ #Prioritize the geoname_id : https://dev.maxmind.com/geoip/docs/databases/city-and-country?lang=en#blocks-files
+		$code = $countryinfo->{$geoname_id}->{'code'};
+		$name = $countryinfo->{$geoname_id}->{'name'};
 	}elsif($countryinfo->{$represented_country_geoname_id}){
 		$code = $countryinfo->{$represented_country_geoname_id}->{'code'};
 		$name = $countryinfo->{$represented_country_geoname_id}->{'name'};
 	}elsif($countryinfo->{$registered_country_geoname_id}){
 		$code = $countryinfo->{$registered_country_geoname_id}->{'code'};
 		$name = $countryinfo->{$registered_country_geoname_id}->{'name'};
-	}elsif($countryinfo->{$geoname_id}){
-		$code = $countryinfo->{$geoname_id}->{'code'};
-		$name = $countryinfo->{$geoname_id}->{'name'};
 	}else{
 		print STDERR "Unknown Geoname ID, panicking. This is a bug.\n";
 		print STDERR "ID: $geoname_id\n";
