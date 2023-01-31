@@ -4,6 +4,10 @@ use diagnostics;
 use NetAddr::IP;
 use Getopt::Long;
 
+# TODO Since CentOS 7 has a too old NetAddr::IP, we need to patch it with below. Support included in NetAddr::IP 4.071
+# This ported from: https://metacpan.org/dist/NetAddr-IP/source/IP.pm
+sub canon($) { my $addr = $_[0]->addr;  return $_[0]->{isv6} ? lc $_[0]->_compV6($addr) : $addr; }
+
 my $quiet = 0;
 GetOptions(
     'quiet' => \$quiet,
@@ -60,7 +64,8 @@ foreach my $line (<STDIN>){
 	my $is_anonymous_proxy = $fields[4];
 	my $is_satellite_provider = $fields[5];
 	my $ip = NetAddr::IP->new($network);
-	my $start_ip = $ip->canon();
+	# my $start_ip = $ip->canon();
+	my $start_ip = canon($ip); # TODO CentOS 7 backward compatibility
 	my $end_ip = $ip->broadcast();
 	my $start_int = $ip->bigint();
 	my $end_int = $end_ip->bigint();
@@ -91,8 +96,10 @@ foreach my $line (<STDIN>){
 
 	# Legacy GeoIP listing format:
 	# "1.0.0.0","1.0.0.255","16777216","16777471","AU","Australia"
+	# printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", 
+	# 	$start_ip, $end_ip->canon(), $start_int, $end_int, $code, $name;
 	printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", 
-		$start_ip, $end_ip->canon(), $start_int, $end_int, $code, $name;
+		$start_ip, canon($end_ip), $start_int, $end_int, $code, $name; # TODO CentOS 7 backward compatibility
 	if (!$quiet && $counter % 10000 == 0) {
 		print STDERR "$counter\n";
 	}
